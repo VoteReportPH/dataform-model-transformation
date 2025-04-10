@@ -1,0 +1,21 @@
+config {
+  type: "incremental", 
+  schema: "prod_vrph_data_gold",
+  uniqueKey: ["user_id", "event_timestamp"]
+}
+
+SELECT 
+  user_id,
+  event_type_standardized,
+  event_timestamp,
+  event_date,
+  device,
+  location
+FROM ${ref('test_silver')}
+
+${when(incremental(),
+`WHERE 
+    user_id IS NOT NULL and 
+    event_timestamp > (SELECT MAX(event_timestamp) FROM ${self()})`)
+}
+
